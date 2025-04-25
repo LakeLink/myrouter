@@ -8,10 +8,18 @@ check process sing-box with pidfile /var/run/myrouter-sing-box.pid
     stop program = "/root/myrouter/sing-box.sh stop"
     if total memory usage > 40% for 10 cycles then restart
     if total cpu usage > 90% for 10 cycles then restart
-    if failed host 1.1.1.1 port 53 type udp protocol dns for 2 cycles then restart
 
 check program nftable with path "/usr/sbin/nft list chain inet myrouter prerouting"
-    if status != 0 then exec "/root/myrouter/reload-firewall.sh"
+    start program = "/root/myrouter/reload-firewall.sh firewall-proxy.nft"
+    if status != 0 then alert
+    if failed
+        port 1008 protocol http
+        request "/generate_204"
+        http headers [Host: www.gstatic.com]
+        status = 204
+        for 10 cycles
+    then exec "/root/myrouter/reload-firewall.sh firewall-failsafe.nft"
+    else restart
 
 check program route with path "/sbin/ip route show table 1100"
     if status != 0 then exec "/root/myrouter/reload-iprule.sh"

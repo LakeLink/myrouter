@@ -162,6 +162,15 @@
           "tag": "tproxy6-in",
           "listen": "::1",
           "listen_port": 1000
-        }
+        },
+        {
+            "type": "direct",
+            "tag": "prober-in",
+            "listen": "127.0.0.1",
+            "listen_port": 1008,
+            "network": "tcp",
+            "override_address": "www.gstatic.com",
+            "override_port": 80
+          }
     ]
 }

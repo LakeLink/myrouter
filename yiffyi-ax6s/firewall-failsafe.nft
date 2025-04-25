@@ -1,0 +1,49 @@
+#!/usr/sbin/nft -f
+
+table inet myrouter;
+# flush table inet myrouter;
+delete table inet myrouter;
+
+table inet myrouter {
+
+    chain out_wan_fixed {
+        meta mark set 1000;
+    }
+
+    chain out_wan6 {
+        meta mark set 999;
+    }
+
+    chain out_wan_balanced {
+        meta l4proto tcp meta mark set jhash tcp sport mod 5 map { 0: 1000, 1: 1001, 2: 1002, 3: 1003, 4: 1004 } accept;
+        meta l4proto udp meta mark set jhash udp sport mod 5 map { 0: 1000, 1: 1001, 2: 1002, 3: 1003, 4: 1004 } accept;
+        # others, we do static to avoid problem
+        meta mark set 1000 accept;
+    }
+
+    chain in_wan {
+        meta mark set iifname map { "br-wan.1320": 1000, "br-wan.1321": 1001, "br-wan.1324": 1002, "br-wan.1320mac0" :1003, "br-wan.1320mac1": 1004 };
+    }
+
+    chain output {
+        type route hook output priority filter+5; policy accept;
+
+        meta nfproto ipv4 goto out_wan_balanced;
+        meta nfproto ipv6 goto out_wan6;
+    }
+
+    chain prerouting {    
+        type filter hook prerouting priority dstnat+5; policy accept;
+
+        iifname "br-lan" counter jump route_decision;
+        iifname { "br-wan.1320", "br-wan.1321", "br-wan.1324", "br-wan.1320mac0", "br-wan.1320mac1" } jump in_wan;
+    }
+
+    chain route_decision {
+        # helps to authenticate
+        ip daddr 10.0.0.0/8 counter goto out_wan_fixed;
+        ip daddr 114.114.114.114 counter goto out_wan_fixed;
+        meta nfproto ipv4 goto out_wan_balanced;
+        meta nfproto ipv6 goto out_wan6;
+    }
+}
