@@ -95,6 +95,9 @@ table inet myrouter {
 
         ip daddr @CHNROUTES accept;
 
+        # avoid new ips in direct_list break existing connection
+        ct mark 1100 goto out_tproxy;
+
         # pass school's IPv6 CIDR
         ip6 daddr { 2001:250:6413::/48, 240c:c7b9:0:400::/64 } counter accept;
         ip6 daddr @direct_list6 counter accept;
@@ -104,21 +107,11 @@ table inet myrouter {
         ip6 daddr @direct_list6 counter accept;
 
         # unsupported protocol
-        meta l4proto != {tcp, udp} goto out_wan_balanced;
+        meta l4proto != {tcp, udp} accept;
 
         # first time of a direct_list ip, must keep going through sing-box to keep
         # the connection
-        meta mark eq 0 goto out_tproxy;
-    }
-
-    chain postrouting {
-        type filter hook postrouting priority filter+5; policy accept;
-
-        oifname "br-wan.1320" counter;
-        oifname "br-wan.1320mac0" counter;
-        oifname "br-wan.1320mac1" counter;
-        oifname "br-wan.1321" counter;
-        oifname "br-wan.1324" counter;
+        meta mark eq 0 ct mark set 1100 goto out_tproxy;
     }
 }
 
