@@ -1,7 +1,7 @@
 
-check process ssh-backdoor with pidfile /var/run/myrouter-ssh.pid
-    start program = "/root/myrouter/backdoor.sh start"
-    stop program = "/root/myrouter/backdoor.sh stop"
+check process ssh-backdoor with pidfile /var/run/myrouter-frpc.pid
+    start program = "/root/myrouter/myfrpc.sh start"
+    stop program = "/root/myrouter/myfrpc.sh stop"
 
 check process sing-box with pidfile /var/run/myrouter-sing-box.pid
     start program = "/root/myrouter/sing-box.sh start"
@@ -25,7 +25,7 @@ check program route with path "/sbin/ip route show table 1100"
     start program = "/root/myrouter/reload-iprule.sh"
     if status != 0 then restart
 
-check system
+check system $HOST
     if cpu usage > 90% for 8 cycles then exec "/sbin/reboot"
 
 check host http-proxy with address 127.0.0.1
