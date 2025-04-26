@@ -9,6 +9,8 @@ case $1 in
 
    sing-box check -c /var/run/sing-box.json || exit 1
 
+   ntpd -dnq -p ntp.sjtu.edu.cn -p time.apple.com -p time.windows.com -p time.cloudflare.com > /var/log/myrouter-ntp.log 2>&1
+
    killall -9 sing-box
    tmux new-session -d -s "sing-box" "sing-box -c /var/run/sing-box.json run"
    echo `tmux list-panes -F '#{pane_pid}' -t sing-box` > /var/run/myrouter-sing-box.pid ;
