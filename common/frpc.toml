@@ -1,0 +1,26 @@
+user = "{{ .Envs.FRP_USER_NAME }}"
+
+serverAddr = "{{ .Envs.FRP_SERVER_ADDR }}"
+serverPort = {{ .Envs.FRP_SERVER_PORT }}
+transport.protocol = "{{ .Envs.FRP_SERVER_PROTOCOL }}"
+
+loginFailExit = false
+log.to = "/var/log/frpc.log"
+log.maxDays = 1
+#transport.tls.enable = false
+#transport.tls.disableCustomTLSFirstByte = false
+
+auth.token = "{{ .Envs.FRP_SERVER_TOKEN }}"
+
+[webServer]
+addr = "192.168.1.1"
+port = 7400
+user = "admin"
+password = "{{ .Envs.FRP_ADMIN_PASSWORD }}"
+
+[[proxies]]
+name = "{{ .Envs.FRP_BACKDOOR_PROXY_NAME }}"
+type = "stcp"
+localIP = "127.0.0.1"
+localPort = 22
+secretKey = "{{ .Envs.FRP_BACKDOOR_SECRET }}"
