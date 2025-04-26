@@ -6,29 +6,42 @@ check process ssh-backdoor with pidfile /var/run/myrouter-ssh.pid
 check process sing-box with pidfile /var/run/myrouter-sing-box.pid
     start program = "/root/myrouter/sing-box.sh start"
     stop program = "/root/myrouter/sing-box.sh stop"
-    if total memory usage > 40% for 6 cycles then restart
-    if total cpu usage > 90% for 6 cycles then restart
+    if total memory usage > 40% for 4 cycles then restart
+    if total cpu usage > 90% for 4 cycles then restart
 
     if failed
         port 1008 protocol http
         request "/generate_204"
         http headers [Host: www.gstatic.com]
         status = 204
-        for 10 cycles
-    then exec "/root/myrouter/reload-firewall.sh firewall-failsafe.nft"
-    else exec "/root/myrouter/reload-firewall.sh firewall-proxy.nft"
+        for 4 cycles
+    then restart
 
 check program nftable with path "/usr/sbin/nft list chain inet myrouter prerouting"
     start program = "/root/myrouter/reload-firewall.sh firewall-proxy.nft"
     if status != 0 then restart
 
 check program route with path "/sbin/ip route show table 1100"
-    if status != 0 then exec "/root/myrouter/reload-iprule.sh"
+    start program = "/root/myrouter/reload-iprule.sh"
+    if status != 0 then restart
+
+check system
+    if cpu usage > 90% for 8 cycles then exec "/sbin/reboot"
+
+check host http-proxy with address 127.0.0.1
+    if failed
+        port 1008 protocol http
+        request "/generate_204"
+        http headers [Host: www.gstatic.com]
+        status = 204
+        for 16 cycles
+    then exec "/root/myrouter/reload-firewall.sh firewall-failsafe.nft"
+    else exec "/root/myrouter/reload-firewall.sh firewall-proxy.nft"
 
 check host http-cn with address connect.rom.miui.com
     if failed
         port 80 protocol http
         request "/generate_204"
         status = 204
-        for 20 cycles
+        for 16 cycles
     then exec "/sbin/reboot"
