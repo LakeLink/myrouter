@@ -13,7 +13,7 @@ log.maxDays = 1
 auth.token = "{{ .Envs.FRP_SERVER_TOKEN }}"
 
 [webServer]
-addr = "192.168.1.1"
+addr = "127.0.0.1"
 port = 7400
 user = "admin"
 password = "{{ .Envs.FRP_ADMIN_PASSWORD }}"

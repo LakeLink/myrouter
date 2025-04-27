@@ -55,13 +55,13 @@ table inet myrouter {
 
     chain route_decision_output {
         # not to wan: go directly
-        oif != { "wwan" } accept;
+        oifname { "br-lan" } accept;
 
-        ip daddr { 10.0.0.0/8, 114.114.114.114 } counter accept;
-        ip daddr @direct_list4 counter accept;
-
+        ip daddr { 10.0.0.0/8, 192.168.1.0/24, 114.114.114.114 } counter accept;
         # pass school's IPv6 CIDR
         ip6 daddr { 2001:250:6413::/48, 240c:c7b9:0:400::/64 } counter accept;
+
+        ip daddr @direct_list4 counter accept;
         ip6 daddr @direct_list6 counter accept;
 
         # is TCP or UDP: try tproxy
@@ -100,7 +100,6 @@ table inet myrouter {
 
         # pass school's IPv6 CIDR
         ip6 daddr { 2001:250:6413::/48, 240c:c7b9:0:400::/64 } counter accept;
-        ip6 daddr @direct_list6 counter accept;
 
         # from others to @direct_list4 ip
         ip daddr @direct_list4 counter accept;
