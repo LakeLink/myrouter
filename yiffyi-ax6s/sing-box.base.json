@@ -66,6 +66,10 @@
     "route": {
         "rules": [
             {
+                "inbound": "prober-in",
+                "outbound": "proxy"
+            },
+            {
                 "action": "sniff"
             },
             {
@@ -86,11 +90,7 @@
                 ]
             },
             {
-                "protocol": "quic",
-                "action": "reject"
-            },
-            {
-                "outbound": "hy2-tok-out",
+                "outbound": "direct-out",
                 "domain_suffix": [
                     "steamcontent.com",
                     "steamserver.net",
@@ -100,25 +100,8 @@
                 ]
             },
             {
-                "domain_suffix": [
-                    "openai.com",
-                    "chatgpt.com",
-                    "bing.com",
-                    "anthropic.com",
-                    "claude.ai",
-                    "stripe.com",
-                    "stripe.network",
-                    "hcaptcha.com"
-                ],
-                "outbound": "hy2-tok-out"
-            },
-            {
-                "domain_suffix": [
-                    "doesn-t.work",
-                    "yif.fyi",
-                    "githubusercontent.com"
-                ],
-                "outbound": "direct-out"
+                "protocol": "quic",
+                "action": "reject"
             }
         ],
         "rule_set": [
@@ -147,7 +130,7 @@
                 "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs"
             }
         ],
-        "final": "vmess-tok-out",
+        "final": "proxy",
         "auto_detect_interface": false
     },
     "inbounds": [
