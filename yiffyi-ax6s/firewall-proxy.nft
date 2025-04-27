@@ -77,7 +77,7 @@ table inet myrouter {
     
     chain route_decision_output {
         # not to wan: go directly
-        oif != { "br-wan.1320", "br-wan.1321", "br-wan.1324", "br-wan.1320mac0", "br-wan.1320mac1" } accept;
+        oifname != { "br-wan.1320", "br-wan.1321", "br-wan.1324", "br-wan.1320mac0", "br-wan.1320mac1" } accept;
 
         # helps to authenticate
         ip daddr 10.0.0.0/8 counter goto out_wan_fixed;
@@ -99,20 +99,20 @@ table inet myrouter {
         
     }
     
-    chain output_raw {
-        type filter hook output priority raw; policy accept;
-        ip daddr 1.1.1.1 meta nftrace set 1;
-        ip daddr 119.29.29.29 meta nftrace set 1;
-    }
-    
-    
-    chain prerouting_raw {
-        type filter hook prerouting priority raw; policy accept;
-        #ip daddr {10.1.10.1, 10.10.10.10} meta nftrace set 1;
-        #ip saddr {10.1.10.1, 10.10.10.10} meta nftrace set 1;
-        ip daddr 1.1.1.1 meta nftrace set 1;
-        meta mark 998 meta nftrace set 1;
-    }
+    # chain output_raw {
+    #     type filter hook output priority raw; policy accept;
+    #     ip daddr 1.1.1.1 meta nftrace set 1;
+    #     ip daddr 119.29.29.29 meta nftrace set 1;
+    # }
+    # 
+    # 
+    # chain prerouting_raw {
+    #     type filter hook prerouting priority raw; policy accept;
+    #     #ip daddr {10.1.10.1, 10.10.10.10} meta nftrace set 1;
+    #     #ip saddr {10.1.10.1, 10.10.10.10} meta nftrace set 1;
+    #     ip daddr 1.1.1.1 meta nftrace set 1;
+    #     meta mark 998 meta nftrace set 1;
+    # }
 
     chain prerouting {    
         type filter hook prerouting priority dstnat+5; policy accept;
@@ -142,6 +142,9 @@ table inet myrouter {
 
         ip daddr @CHNROUTES goto out_wan_balanced;
 
+        # avoid new ips in direct_list break existing connection
+        ct mark 1100 goto out_tproxy;
+
         # pass school's IPv6 CIDR
         ip6 daddr 2001:250:6413::/48 counter goto out_wan6;
         ip6 daddr 240c:c7b9:0:400::/64 counter goto out_wan6;
@@ -155,7 +158,7 @@ table inet myrouter {
 
         # first time of a direct_list ip, must keep going through sing-box to keep
         # the connection
-        meta mark eq 0 goto out_tproxy;
+        meta mark eq 0 ct mark set 1100 goto out_tproxy;
     }
 
     chain postrouting {
