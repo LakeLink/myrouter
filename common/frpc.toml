@@ -19,8 +19,29 @@ user = "admin"
 password = "{{ .Envs.FRP_ADMIN_PASSWORD }}"
 
 [[proxies]]
-name = "{{ .Envs.FRP_BACKDOOR_PROXY_NAME }}"
+name = "{{ .Envs.FRP_DEVICE_NAME }}-ssh"
 type = "stcp"
 localIP = "127.0.0.1"
 localPort = 22
-secretKey = "{{ .Envs.FRP_BACKDOOR_SECRET }}"
+secretKey = "{{ .Envs.FRP_STCP_SECRET }}"
+
+[[proxies]]
+name = "{{ .Envs.FRP_DEVICE_NAME }}-luci"
+type = "stcp"
+localIP = "127.0.0.1"
+localPort = 80
+secretKey = "{{ .Envs.FRP_STCP_SECRET }}"
+
+[[proxies]]
+name = "{{ .Envs.FRP_DEVICE_NAME }}-netdata"
+type = "stcp"
+localIP = "127.0.0.1"
+localPort = 19999
+secretKey = "{{ .Envs.FRP_STCP_SECRET }}"
+
+[[proxies]]
+name = "{{ .Envs.FRP_DEVICE_NAME }}-monit"
+type = "stcp"
+localIP = "127.0.0.1"
+localPort = 2812
+secretKey = "{{ .Envs.FRP_STCP_SECRET }}"
