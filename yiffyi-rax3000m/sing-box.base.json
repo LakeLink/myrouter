@@ -96,6 +96,13 @@
                     "githubusercontent.com"
                 ],
                 "outbound": "direct-out"
+            },
+            {
+                "domain_suffix": [
+                    "scholar.googleusercontent.com",
+                    "scholar.google.com"
+                ],
+                "outbound": "special"
             }
         ],
         "rule_set": [
