@@ -5,6 +5,7 @@ case $1 in
    sing-box merge /var/run/sing-box.json \
      -D /root/myrouter \
      -c sing-box.base.json \
+     -c sing-box.dns.json \
      -c sing-box.secrets.json
 
    sing-box check -c /var/run/sing-box.json || exit 1

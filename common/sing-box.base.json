@@ -1,0 +1,158 @@
+{
+    "outbounds": [
+    ],
+    "log": {
+        "timestamp": true,
+        "level": "info",
+        "disabled": false
+    },
+    "dns": {
+        "servers": [
+            {
+                "tag": "dns_1",
+                "address": "https://1.1.1.1/dns-query"
+            },
+            {
+                "tag": "dns_block",
+                "address": "rcode://refused"
+            }
+        ],
+        "rules": [
+            {
+                "outbound": "any",
+                "server": "dns_direct"
+            },
+            {
+                "query_type": "PTR",
+                "server": "dns_direct"
+            },         
+            {
+                "rule_set": [
+                    "geosite-cn",
+                    "geosite-apple@cn",
+                    "geosite-category-games@cn"
+                ],
+                "server": "dns_direct"
+            },
+            {
+                "domain_suffix": [
+                    "steamcontent.com",
+                    "steamserver.net",
+                    "aki-game.net",
+                    "kurogame.xyz"
+                ],
+                "server": "dns_direct"
+            },
+            {
+                "domain_suffix": [
+                    "doesn-t.work",
+                    "yif.fyi",
+                    "githubusercontent.com"
+                ],
+                "server": "dns_direct"
+            }
+        ],
+        "strategy": "prefer_ipv4",
+        "reverse_mapping": false,
+        "disable_cache": true,
+        "final": "dns_1"
+    },
+    "route": {
+        "rules": [
+            {
+                "inbound": "prober-in",
+                "outbound": "proxy"
+            },
+            {
+                "action": "sniff"
+            },
+            {
+                "protocol": "dns",
+                "action": "hijack-dns"
+            },
+            {
+                "ip_is_private": true,
+                "outbound": "direct-out"
+            },
+            {
+                "rule_set": [
+                    "geosite-cn",
+                    "geosite-apple@cn",
+                    "geosite-category-games@cn",
+                    "geoip-cn"
+                ],
+                "outbound": "direct-out"
+            },
+            {
+                "domain_suffix": [
+                    "doesn-t.work",
+                    "yif.fyi",
+                    "githubusercontent.com"
+                ],
+                "outbound": "direct-out"
+            },
+            {
+                "protocol": "quic",
+                "action": "reject"
+            },
+            {
+                "domain_suffix": [
+                    "scholar.googleusercontent.com",
+                    "scholar.google.com"
+                ],
+                "outbound": "special"
+            }
+        ],
+        "rule_set": [
+            {
+                "type": "remote",
+                "tag": "geosite-cn",
+                "format": "binary",
+                "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs"
+            },
+            {
+                "type": "remote",
+                "tag": "geosite-apple@cn",
+                "format": "binary",
+                "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-apple@cn.srs"
+            },
+            {
+                "type": "remote",
+                "tag": "geosite-category-games@cn",
+                "format": "binary",
+                "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-games@cn.srs"
+            },
+            {
+                "type": "remote",
+                "tag": "geoip-cn",
+                "format": "binary",
+                "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs"
+            }
+        ],
+        "final": "proxy",
+        "auto_detect_interface": false
+    },
+    "inbounds": [
+        {
+          "type": "tproxy",
+          "tag": "tproxy-in",
+          "listen": "127.0.0.1",
+          "listen_port": 1000
+        },
+        {
+          "type": "tproxy",
+          "tag": "tproxy6-in",
+          "listen": "::1",
+          "listen_port": 1000
+        },
+        {
+            "type": "direct",
+            "tag": "prober-in",
+            "listen": "127.0.0.1",
+            "listen_port": 1008,
+            "network": "tcp",
+            "override_address": "www.gstatic.com",
+            "override_port": 80
+        }
+    ]
+}

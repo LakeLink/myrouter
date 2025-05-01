@@ -1,0 +1,11 @@
+{
+    "dns": {
+        "servers": [
+            {
+                "tag": "dns_direct",
+                "address": "10.10.10.10",
+                "detour": "direct-out"
+            }
+        ]
+    }
+}
