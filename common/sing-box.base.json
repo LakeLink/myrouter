@@ -17,41 +17,7 @@
                 "address": "rcode://refused"
             }
         ],
-        "rules": [
-            {
-                "outbound": "any",
-                "server": "dns_direct"
-            },
-            {
-                "query_type": "PTR",
-                "server": "dns_direct"
-            },         
-            {
-                "rule_set": [
-                    "geosite-cn",
-                    "geosite-apple@cn",
-                    "geosite-category-games@cn"
-                ],
-                "server": "dns_direct"
-            },
-            {
-                "domain_suffix": [
-                    "steamcontent.com",
-                    "steamserver.net",
-                    "aki-game.net",
-                    "kurogame.xyz"
-                ],
-                "server": "dns_direct"
-            },
-            {
-                "domain_suffix": [
-                    "doesn-t.work",
-                    "yif.fyi",
-                    "githubusercontent.com"
-                ],
-                "server": "dns_direct"
-            }
-        ],
+        "rules": [],
         "strategy": "prefer_ipv4",
         "reverse_mapping": false,
         "disable_cache": true,

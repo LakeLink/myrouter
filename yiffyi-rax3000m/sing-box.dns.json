@@ -5,21 +5,16 @@
                 "tag": "dns_westlake",
                 "address": "10.10.10.10",
                 "detour": "direct-out"
-            },
-            {
-                "tag": "dns_tx",
-                "address": "https://120.53.53.53/dns-query",
-                "detour": "direct-out"
             }
         ],
         "rules": [
             {
                 "outbound": "any",
-                "server": "dns_tx"
+                "server": "dns_westlake"
             },
             {
                 "query_type": "PTR",
-                "server": "dns_tx"
+                "server": "dns_westlake"
             },
             {
                 "rule_set": [
@@ -27,7 +22,7 @@
                     "geosite-apple@cn",
                     "geosite-category-games@cn"
                 ],
-                "server": "dns_tx"
+                "server": "dns_westlake"
             },
             {
                 "domain_suffix": [
@@ -36,7 +31,7 @@
                     "aki-game.net",
                     "kurogame.xyz"
                 ],
-                "server": "dns_tx"
+                "server": "dns_westlake"
             },
             {
                 "domain_suffix": [
@@ -44,7 +39,7 @@
                     "yif.fyi",
                     "githubusercontent.com"
                 ],
-                "server": "dns_tx"
+                "server": "dns_westlake"
             }
         ]
     }
