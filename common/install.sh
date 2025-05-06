@@ -3,6 +3,7 @@
 cd /root/myrouter
 chmod +x *.sh
 
+rm /etc/monitrc
 ln -s /root/myrouter/monitrc-common /etc/monitrc
 chmod 600 /etc/monitrc
 
