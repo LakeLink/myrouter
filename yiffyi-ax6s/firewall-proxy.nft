@@ -43,9 +43,9 @@ table inet myrouter {
         meta mark set 1000 accept;
     }
 
-    chain in_wan {
-        meta mark set iifname map { "br-wan.1320": 1000, "br-wan.1321": 1001, "br-wan.1324": 1002, "br-wan.1320mac0" :1003, "br-wan.1320mac1": 1004 };
-    }
+    # chain in_wan {
+    #     meta mark set iifname map { "br-wan.1320": 1000, "br-wan.1321": 1001, "br-wan.1324": 1002, "br-wan.1320mac0" :1003, "br-wan.1320mac1": 1004 };
+    # }
 
     chain out_tproxy {
         # has to be at prerouting
@@ -122,7 +122,7 @@ table inet myrouter {
         # packages at lo cannot be forwarded to other interface. Must go tproxy;
         meta mark 998 meta mark set 0 goto out_tproxy;
         iifname "br-lan" counter jump route_decision;
-        iifname { "br-wan.1320", "br-wan.1321", "br-wan.1324", "br-wan.1320mac0", "br-wan.1320mac1" } jump in_wan;
+        # iifname { "br-wan.1320", "br-wan.1321", "br-wan.1324", "br-wan.1320mac0", "br-wan.1320mac1" } jump in_wan;
     }
 
     chain route_decision {
