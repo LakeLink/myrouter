@@ -5,8 +5,7 @@ set httpd port 2812 and
     # use address localhost  # only accept connection from localhost (drop if you use M/Monit)
     allow localhost          # allow localhost to connect to the server and
     # allow admin:monit      # require user 'admin' with password 'monit'
-    allow 192.168.1.0/24
-    allow 192.168.2.0/24
-    allow 192.168.10.0/24
+    allow 192.168.0.0/16
+    allow 198.19.0.0/16
 
 include /etc/monit.d/*
