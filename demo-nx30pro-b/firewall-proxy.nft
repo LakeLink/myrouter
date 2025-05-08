@@ -56,6 +56,9 @@ table inet myrouter {
     chain route_decision_output {
         # not to wan: go directly
         oifname { "br-lan" } accept;
+    
+        # pass NTP
+        udp dport 123 counter accept;
 
         ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16, 114.114.114.114 } counter accept;
         # pass school's IPv6 CIDR
@@ -81,6 +84,9 @@ table inet myrouter {
     chain route_decision {
         meta nfproto ipv4 meta l4proto icmp counter accept;
         meta nfproto ipv6 meta l4proto icmpv6 counter accept;
+    
+        # pass NTP
+        udp dport 123 counter accept;
 
         ip daddr { 10.0.0.0/8, 114.114.114.114 } counter accept;
 
