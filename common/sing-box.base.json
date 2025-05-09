@@ -62,7 +62,7 @@
                     "geosite-cn",
                     "geosite-apple@cn",
                     "geosite-category-games@cn",
-                    "geoip-cn"
+                    "geoip-one-china"
                 ],
                 "outbound": "direct-out"
             },
@@ -106,9 +106,9 @@
             },
             {
                 "type": "remote",
-                "tag": "geoip-cn",
+                "tag": "geoip-one-china",
                 "format": "binary",
-                "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs"
+                "url": "https://raw.githubusercontent.com/OneOhCloud/one-geoip/rule-set/one-china.srs"
             }
         ],
         "final": "proxy",
