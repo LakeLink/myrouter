@@ -37,7 +37,12 @@
                 "action": "sniff"
             },
             {
+                "protocol": "bittorrent",
+                "outbound": "direct-out"
+            },
+            {
                 "protocol": "dns",
+                "port": 53,
                 "action": "hijack-dns"
             },
             {
@@ -68,9 +73,11 @@
             },
             {
                 "domain_suffix": [
-                    "doesn-t.work",
-                    "yif.fyi",
-                    "githubusercontent.com"
+                    "steamcontent.com",
+                    "steamserver.net",
+                    "aki-game.net",
+                    "kurogame.xyz",
+                    "bing.com"
                 ],
                 "outbound": "direct-out"
             },
