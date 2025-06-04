@@ -87,6 +87,8 @@ table inet myrouter {
     
         # pass NTP
         udp dport 123 counter accept;
+        udp sport 41641 counter accept comment "tailscale";
+        udp dport 3478 counter accept comment "STUN";
 
         ip daddr { 10.0.0.0/8, 114.114.114.114 } counter accept;
 
@@ -104,7 +106,7 @@ table inet myrouter {
         # avoid new ips in direct_list break existing connection
         ct mark 1100 goto out_tproxy;
 
-        ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16, 114.114.114.114 } counter accept;
+        ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16, 100.64.0.0/10, 114.114.114.114 } counter accept;
         # pass school's IPv6 CIDR
         ip6 daddr { 2001:250:6413::/48, 240c:c7b9:0:400::/64 } counter accept;
 
