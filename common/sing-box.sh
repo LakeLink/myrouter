@@ -14,7 +14,7 @@ case $1 in
    echo `tmux list-panes -F '#{pane_pid}' -t sing-box` > /var/run/myrouter-sing-box.pid ;
 
    # You might need sing-box up and running to resolve hostname
-   ntpd -dnq -p ntp.sjtu.edu.cn -p time.apple.com -p time.windows.com -p time.cloudflare.com > /var/log/myrouter-ntp.log 2>&1
+   ntpd -dnq -p time.apple.com -p time.windows.com -p ntp1.aliyun.com > /var/log/myrouter-ntp.log 2>&1
    ;;
  stop)
    kill -9 `cat /var/run/myrouter-sing-box.pid`
