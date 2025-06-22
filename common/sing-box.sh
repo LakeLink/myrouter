@@ -6,9 +6,9 @@ case $1 in
      -D /root/myrouter \
      -c sing-box.base.json \
      -c sing-box.dns.json \
-     -c sing-box.secrets.json
+     -c sing-box.secrets.json || exit 1
 
-   sing-box check -c /var/run/sing-box.json || exit 1
+   sing-box check -c /var/run/sing-box.json || exit 2
    killall -9 sing-box
    tmux new-session -d -s "sing-box" "sing-box -c /var/run/sing-box.json run"
    echo `tmux list-panes -F '#{pane_pid}' -t sing-box` > /var/run/myrouter-sing-box.pid ;
