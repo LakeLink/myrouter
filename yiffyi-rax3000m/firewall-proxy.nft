@@ -60,7 +60,7 @@ table inet myrouter {
         # pass NTP
         udp dport 123 counter accept;
 
-        ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16, 114.114.114.114 } counter accept;
+        ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16, 100.64.0.0/10, 114.114.114.114 } counter accept;
         # pass school's IPv6 CIDR
         ip6 daddr { 2001:250:6413::/48, 240c:c7b9:0:400::/64 } counter accept;
 

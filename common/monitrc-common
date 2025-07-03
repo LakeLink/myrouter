@@ -7,5 +7,6 @@ set httpd port 2812 and
     # allow admin:monit      # require user 'admin' with password 'monit'
     allow 192.168.0.0/16
     allow 198.19.0.0/16
+    allow 100.64.0.0/10
 
 include /etc/monit.d/*
