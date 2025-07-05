@@ -3,7 +3,7 @@
 case $1 in
  start)
    sing-box merge /var/run/sing-box.json \
-     -D /root/myrouter \
+     -D /etc/myrouter \
      -c sing-box.base.json \
      -c sing-box.dns.json \
      -c sing-box.secrets.json || exit 1

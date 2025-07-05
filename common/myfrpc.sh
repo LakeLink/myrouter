@@ -1,13 +1,13 @@
 #!/bin/sh
 
-. /root/myrouter/secrets.env
+. /etc/myrouter/secrets.env
 
 case $1 in
  start)
-   frpc verify -c /root/myrouter/frpc.toml || exit 1
+   frpc verify -c /etc/myrouter/frpc.toml || exit 1
 
    killall frpc
-   frpc -c /root/myrouter/frpc.toml &
+   frpc -c /etc/myrouter/frpc.toml &
    echo $! > /var/run/myrouter-frpc.pid ;
    ;;
  stop)
