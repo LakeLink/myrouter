@@ -110,7 +110,7 @@ table inet myrouter {
         # if you choose accept, it will go through eth1
         fib daddr . iif oifname != "eth1" counter accept;
 
-        ip daddr @CHNROUTES jump out_wan_balanced;
+        ip daddr @CHNROUTES goto out_wan_balanced;
 
         # avoid new ips in direct_list break existing connection
         ct mark 1100 goto out_tproxy;
@@ -120,8 +120,8 @@ table inet myrouter {
         ip6 daddr { 2001:250:6413::/48, 240c:c7b9:0:400::/64 } counter accept;
 
         # from others to @direct_list4 ip
-        ip daddr @direct_list4 counter jump out_wan_balanced;
-        ip6 daddr @direct_list6 counter jump out_wan_balanced;
+        ip daddr @direct_list4 counter goto out_wan_balanced;
+        ip6 daddr @direct_list6 counter goto out_wan_balanced;
 
         # unsupported protocol
         meta l4proto != {tcp, udp} accept;
