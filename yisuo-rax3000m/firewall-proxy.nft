@@ -46,37 +46,40 @@ table inet myrouter {
     chain output {
         type route hook output priority filter+5; policy accept;
 
+        # not to wan: go directly
+        oifname { "br-lan", "br-guest" } accept;
+        oifname != "eth1" accept;
+
         ip daddr @CHNROUTES accept;
 
         # from sing-box
-        meta mark eq 999 meta nfproto ipv4 update @direct_list4 { ip daddr } counter accept;
-        meta mark eq 999 meta nfproto ipv6 update @direct_list6 { ip6 daddr } counter accept;
+        meta mark eq 999 meta nfproto ipv4 update @direct_list4 { ip daddr } counter goto out_wan_balanced;
+        meta mark eq 999 meta nfproto ipv6 update @direct_list6 { ip6 daddr } counter goto out_wan_balanced;
         # anything else?
-        meta mark eq 999 counter accept;
+        meta mark eq 999 counter goto out_wan_balanced;
 
         # dummy mark, only used to force reroute.
         meta mark != 999 jump route_decision_output;
     }
 
     chain route_decision_output {
-        # not to wan: go directly
-        # oifname { "br-lan", "br-guest" } accept;
-        oifname != "eth1" accept;
-    
         # pass NTP
         udp dport 123 counter accept;
+        # bypass tailscale
+        udp sport 41641 counter accept;
 
         ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16, 100.64.0.0/10, 114.114.114.114 } counter accept;
         # pass school's IPv6 CIDR
         ip6 daddr { 2001:250:6413::/48, 240c:c7b9:0:400::/64 } counter accept;
 
-        ip daddr @direct_list4 counter accept;
-        ip6 daddr @direct_list6 counter accept;
+        ip daddr @direct_list4 counter goto out_wan_balanced;
+        ip6 daddr @direct_list6 counter goto out_wan_balanced;
 
         # is TCP or UDP: try tproxy
         # meta l4proto {tcp, udp} meta mark set 1100 accept;
         # only intersect DNS
         udp dport 53 meta mark set 1100 accept;
+        meta l4proto {tcp, udp} goto out_wan_balanced;
     }
 
     chain prerouting {    
