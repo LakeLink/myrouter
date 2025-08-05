@@ -28,10 +28,20 @@ table inet myrouter {
         gc-interval 1h;
     }
 
+    set _temp_fib_set {
+        typeof fib mark . daddr oifname;
+        flags dynamic;
+    }
+
     chain out_tproxy {
         # has to be at prerouting
         meta nfproto ipv4 meta l4proto {tcp, udp} mark set 1100 tproxy ip to 127.0.0.1:1000 counter accept;
         meta nfproto ipv6 meta l4proto {tcp, udp} mark set 1100 tproxy ip6 to [::1]:1000 counter accept;
+    }
+
+    chain out_wan_balanced {
+        meta l4proto tcp meta mark set jhash tcp sport mod 7 map { 0: 1000, 1: 1001, 2: 1002, 3: 1003, 4: 1004, 5: 1005, 6: 1006 } accept;
+        meta l4proto udp meta mark set jhash udp sport mod 7 map { 0: 1000, 1: 1001, 2: 1002, 3: 1003, 4: 1004, 5: 1005, 6: 1006 } accept;
     }
 
     # meta mark
@@ -41,7 +51,13 @@ table inet myrouter {
     chain output {
         type route hook output priority filter+5; policy accept;
 
-        ip daddr @CHNROUTES accept;
+        # don't touch tailscale daemon marker
+        meta mark & 0xff0000 == 0x80000 counter accept;
+
+        # this is just to avoid lock out, you can delete it if safe.
+        udp sport 41641 accept;
+
+        ip daddr @CHNROUTES goto out_wan_balanced;
 
         # from sing-box
         meta mark eq 999 meta nfproto ipv4 update @direct_list4 { ip daddr } counter accept;
@@ -49,36 +65,49 @@ table inet myrouter {
         # anything else?
         meta mark eq 999 counter accept;
 
-        # dummy mark, only used to force reroute.
         meta mark != 999 jump route_decision_output;
     }
 
     chain route_decision_output {
-        # not to wan: go directly
-        oifname { "br-lan" } accept;
-    
         # pass NTP
         udp dport 123 counter accept;
 
-        ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16, 100.64.0.0/10, 114.114.114.114 } counter accept;
+        # now dealt with suppress_prefixlength 0
+        # <<<
+        # not to wan: go directly
+        # oifname { "br-lan" } accept;
+        # ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16, 100.64.0.0/10, 114.114.114.114 } counter accept;
         # pass school's IPv6 CIDR
-        ip6 daddr { 2001:250:6413::/48, 240c:c7b9:0:400::/64 } counter accept;
+        # ip6 daddr { 2001:250:6413::/48, 240c:c7b9:0:400::/64 } counter accept;
+        # >>>
 
-        ip daddr @direct_list4 counter accept;
-        ip6 daddr @direct_list6 counter accept;
+        ip daddr @direct_list4 counter goto out_wan_balanced;
+        ip6 daddr @direct_list6 counter goto out_wan_balanced;
 
         # is TCP or UDP: try tproxy
         # meta l4proto {tcp, udp} meta mark set 1100 accept;
         # only intersect DNS
+        # via ip rule, it's sent out to lo
         udp dport 53 meta mark set 1100 accept;
     }
 
     chain prerouting {    
         type filter hook prerouting priority dstnat+5; policy accept;
 
-        # packages at lo cannot be forwarded to other interface. Must go tproxy;
+        # received from lo, magically keeps meta mark
+        # due to openwrt fw4, maybe we shouldn't forward from lo to other
         meta mark 1100 goto out_tproxy;
-        iifname "br-lan" counter jump route_decision;
+
+        # add more iifname if you want allow more networks to use tproxy/balance
+        meta mark 0 iifname "br-lan" counter jump route_decision;
+    }
+
+    chain _temp {
+        # probe route table: if oif = "lo", then it is meant to be sent via default route; if not, it's a common route;
+        meta nftrace set 1;
+        meta mark set 1100;
+        update @_temp_fib_set { fib mark . daddr oifname };
+        meta mark set 0;
     }
 
     chain route_decision {
@@ -86,40 +115,41 @@ table inet myrouter {
         meta nfproto ipv6 meta l4proto icmpv6 counter accept;
     
         # pass NTP
-        udp dport 123 counter accept;
+        udp dport 123 counter accept comment "NTP";
         udp sport 41641 counter accept comment "tailscale";
         udp dport 3478 counter accept comment "STUN";
 
         ip daddr { 10.0.0.0/8, 114.114.114.114 } counter accept;
 
         # avoid DNS leakage
-        # this still works if daddr is 192.168.1.1
+        # this still works if daddr is router
         # meta nfproto ipv6 udp dport 53 counter reject;
         meta mark ne 999 udp dport 53 counter goto out_tproxy;
         meta mark ne 999 tcp dport 53 counter goto out_tproxy;
 
         # to router
-        fib daddr . iif type eq { local, broadcast, multicast } counter accept;
-
-        ip daddr @CHNROUTES accept;
+        fib daddr type eq { local, broadcast, multicast } counter accept;
 
         # avoid new ips in direct_list break existing connection
         ct mark 1100 goto out_tproxy;
 
+        jump _temp;
+
+        # these are for safety, actually you might can remove it after test.
         ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16, 100.64.0.0/10, 114.114.114.114 } counter accept;
         # pass school's IPv6 CIDR
         ip6 daddr { 2001:250:6413::/48, 240c:c7b9:0:400::/64 } counter accept;
 
-        # from others to @direct_list4 ip
-        ip daddr @direct_list4 counter accept;
-        ip6 daddr @direct_list6 counter accept;
-
         # unsupported protocol
-        meta l4proto != {tcp, udp} accept;
+        meta l4proto != {tcp, udp} counter accept;
+
+        ip daddr @CHNROUTES counter goto out_wan_balanced;
+        ip daddr @direct_list4 counter goto out_wan_balanced;
+        ip6 daddr @direct_list6 counter goto out_wan_balanced;
 
         # first time of a direct_list ip, must keep going through sing-box to keep
         # the connection
-        meta mark eq 0 ct mark set 1100 goto out_tproxy;
+        ct mark set 1100 goto out_tproxy;
     }
 }
 
