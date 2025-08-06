@@ -88,7 +88,7 @@ table inet myrouter {
         # meta l4proto {tcp, udp} meta mark set 1100 accept;
         # only intersect DNS
         # via ip rule, it's sent out to lo
-        udp dport 53 meta mark set 1100 accept;
+        oif != "lo" udp dport 53 meta mark set 1100 accept;
     }
 
     chain prerouting {    
@@ -99,7 +99,7 @@ table inet myrouter {
         meta mark 1100 goto out_tproxy;
 
         # add more iifname if you want allow more networks to use tproxy/balance
-        meta mark 0 iifname "br-lan" counter jump route_decision;
+        meta mark 0 iifname { "br-lan", "br-guest" } counter jump route_decision;
     }
 
     chain _temp {
@@ -120,6 +120,7 @@ table inet myrouter {
         udp dport 3478 counter accept comment "STUN";
 
         ip daddr { 10.0.0.0/8, 114.114.114.114 } counter accept;
+        ip daddr { 224.0.0.0/4, 255.255.255.255 } counter accept;
 
         # avoid DNS leakage
         # this still works if daddr is router
@@ -133,7 +134,7 @@ table inet myrouter {
         # avoid new ips in direct_list break existing connection
         ct mark 1100 goto out_tproxy;
 
-        jump _temp;
+        # jump _temp;
 
         # these are for safety, actually you might can remove it after test.
         ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16, 100.64.0.0/10, 114.114.114.114 } counter accept;
