@@ -76,6 +76,7 @@
                 "rule_set": [
                     "geosite-cn",
                     "geosite-apple@cn",
+                    "geosite-microsoft@cn",
                     "geosite-category-games@cn",
                     "geoip-one-china"
                 ],
@@ -115,6 +116,12 @@
                 "tag": "geosite-apple@cn",
                 "format": "binary",
                 "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-apple@cn.srs"
+            },
+            {
+                "type": "remote",
+                "tag": "geosite-microsoft@cn",
+                "format": "binary",
+                "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-microsoft@cn.srs"
             },
             {
                 "type": "remote",
