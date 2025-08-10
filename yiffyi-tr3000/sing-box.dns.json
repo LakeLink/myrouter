@@ -1,0 +1,54 @@
+{
+    "dns": {
+        "servers": [
+            {
+                "tag": "dns_ali",
+                "address": "223.5.5.5",
+                "detour": "direct-out"
+            }
+        ],
+        "rules": [
+            {
+                "outbound": "any",
+                "server": "dns_ali"
+            },
+            {
+                "query_type": "PTR",
+                "server": "dns_ali"
+            },
+            {
+                "rule_set": [
+                    "geosite-google"
+                ],
+                "server": "dns_1"
+            },
+            {
+                "rule_set": [
+                    "geosite-cn",
+                    "geosite-apple@cn",
+                    "geosite-microsoft@cn",
+                    "geosite-category-games@cn"
+                ],
+                "server": "dns_ali"
+            },
+            {
+                "domain_suffix": [
+                    "steamcontent.com",
+                    "steamserver.net",
+                    "aki-game.net",
+                    "kurogame.xyz",
+                    "bing.com"
+                ],
+                "server": "dns_ali"
+            },
+            {
+                "domain_suffix": [
+                    "doesn-t.work",
+                    "yif.fyi",
+                    "githubusercontent.com"
+                ],
+                "server": "dns_ali"
+            }
+        ]
+    }
+}
