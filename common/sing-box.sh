@@ -10,6 +10,9 @@ case $1 in
 
    sing-box check -c /var/run/sing-box.json || exit 2
 
+   tmux capture-pane -p -t sing-box > /var/log/myrouter-sing-box-tail.log
+   tmux kill-session -t "sing-box"
+
    # memory limit: 100MB
    tmux new-session -d -s sing-box -e "GOMEMLIMIT=100000000" "sing-box -c /var/run/sing-box.json run"\; \
         set-option remain-on-exit failed
