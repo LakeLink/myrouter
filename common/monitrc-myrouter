@@ -6,7 +6,7 @@ check process ssh-backdoor with pidfile /var/run/myrouter-frpc.pid
 check process sing-box with pidfile /var/run/myrouter-sing-box.pid
     start program = "/etc/myrouter/sing-box.sh start"
     stop program = "/etc/myrouter/sing-box.sh stop"
-    if total memory usage > 40% for 4 cycles then restart
+    if total memory usage > 50% for 4 cycles then restart
     if total cpu usage > 90% for 4 cycles then restart
 
     if failed
@@ -34,14 +34,16 @@ check host http-proxy with address 127.0.0.1
         request "/generate_204"
         http headers [Host: www.gstatic.com]
         status = 204
-        for 16 cycles
+        for 8 cycles
     then exec "/etc/myrouter/reload-firewall.sh firewall-failsafe.nft"
     else exec "/etc/myrouter/reload-firewall.sh firewall-proxy.nft"
+    every 2 cycles
 
-check host http-cn with address connect.rom.miui.com
-    if failed
-        port 80 protocol http
-        request "/generate_204"
-        status = 204
-        for 16 cycles
-    then exec "/sbin/reboot"
+# check host http-cn with address connect.rom.miui.com
+#     if failed
+#         port 80 protocol http
+#         request "/generate_204"
+#         status = 204
+#         for 8 cycles
+#     then exec "/sbin/reboot"
+#     every 2 cycles

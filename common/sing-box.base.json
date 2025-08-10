@@ -41,6 +41,16 @@
                 "outbound": "direct-out"
             },
             {
+                "domain_suffix": [
+                    "atlake.link",
+                    "lake.link",
+                    "doesn-t.work",
+                    "lklk.tech",
+                    "yif.fyi"
+                ],
+                "outbound": "direct-out"
+            },
+            {
                 "protocol": "dns",
                 "port": 53,
                 "action": "hijack-dns"
