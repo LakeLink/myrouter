@@ -2,19 +2,51 @@
     "dns": {
         "servers": [
             {
-                "tag": "dns_tx",
-                "address": "https://120.53.53.53/dns-query",
+                "tag": "dns_ali",
+                "address": "223.5.5.5",
+                "detour": "direct-out"
+            },
+            {
+                "tag": "dns_tailscale",
+                "address": "100.100.100.100",
+                "detour": "direct-out"
+            },
+            {
+                "tag": "dns_dnsmasq",
+                "address": "127.0.0.1",
                 "detour": "direct-out"
             }
         ],
         "rules": [
             {
                 "outbound": "any",
-                "server": "dns_tx"
+                "server": "dns_ali"
             },
             {
                 "query_type": "PTR",
-                "server": "dns_tx"
+                "server": "dns_ali"
+            },
+            {
+                "domain_suffix": [
+                    "lan",
+                    "local"
+                ],
+                "server": "dns_dnsmasq"
+            },
+            {
+                "domain_suffix": [
+                    "atlake.link",
+                    "doesn-t.work",
+                    "lklk.tech",
+                    "yif.fyi"
+                ],
+                "server": "dns_ali"
+            },
+            {
+                "domain_suffix": [
+                    "lake.link"
+                ],
+                "server": "dns_tailscale"
             },
             {
                 "rule_set": [
@@ -29,7 +61,7 @@
                     "geosite-microsoft@cn",
                     "geosite-category-games@cn"
                 ],
-                "server": "dns_tx"
+                "server": "dns_ali"
             },
             {
                 "domain_suffix": [
@@ -39,7 +71,7 @@
                     "kurogame.xyz",
                     "bing.com"
                 ],
-                "server": "dns_tx"
+                "server": "dns_ali"
             },
             {
                 "domain_suffix": [
@@ -47,7 +79,7 @@
                     "yif.fyi",
                     "githubusercontent.com"
                 ],
-                "server": "dns_tx"
+                "server": "dns_ali"
             }
         ]
     }

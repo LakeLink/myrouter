@@ -40,8 +40,8 @@ table inet myrouter {
     }
 
     chain out_wan_balanced {
-        meta l4proto tcp meta mark set jhash tcp sport mod 7 map { 0: 1000, 1: 1001, 2: 1002, 3: 1003, 4: 1004, 5: 1005, 6: 1006 } accept;
-        meta l4proto udp meta mark set jhash udp sport mod 7 map { 0: 1000, 1: 1001, 2: 1002, 3: 1003, 4: 1004, 5: 1005, 6: 1006 } accept;
+        meta l4proto tcp meta mark set jhash tcp sport mod 2 map { 0: 1000, 1: 1001 } accept;
+        meta l4proto udp meta mark set jhash udp sport mod 2 map { 0: 1000, 1: 1001 } accept;
     }
 
     # meta mark
@@ -88,7 +88,7 @@ table inet myrouter {
         # meta l4proto {tcp, udp} meta mark set 1100 accept;
         # only intersect DNS
         # via ip rule, it's sent out to lo
-        oif != "lo" udp dport 53 meta mark set 1100 accept;
+        oif != "lo" ip daddr != 100.100.100.100 udp dport 53 meta mark set 1100 accept;
     }
 
     chain prerouting {    
@@ -100,14 +100,6 @@ table inet myrouter {
 
         # add more iifname if you want allow more networks to use tproxy/balance
         meta mark 0 iifname { "br-lan", "br-guest" } counter jump route_decision;
-    }
-
-    chain _temp {
-        # probe route table: if oif = "lo", then it is meant to be sent via default route; if not, it's a common route;
-        meta nftrace set 1;
-        meta mark set 1100;
-        update @_temp_fib_set { fib mark . daddr oifname };
-        meta mark set 0;
     }
 
     chain route_decision {
