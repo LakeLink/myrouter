@@ -26,6 +26,7 @@ case $1 in
    tmux capture-pane -p -t sing-box > /var/log/myrouter-sing-box-tail.log
    kill -9 `cat /var/run/myrouter-sing-box.pid` && rm /var/run/myrouter-sing-box.pid
    tmux kill-session -t "sing-box"
+   killall -9 sing-box # clean-up orphan sing-box
    ;;
  *)
    echo "usage: sing-box {start|stop}" ;;
