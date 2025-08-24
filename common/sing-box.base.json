@@ -46,7 +46,8 @@
                     "lake.link",
                     "doesn-t.work",
                     "lklk.tech",
-                    "yif.fyi"
+                    "yif.fyi",
+                    "ft2.ltd"
                 ],
                 "outbound": "direct-out"
             },
@@ -103,37 +104,43 @@
                 "type": "remote",
                 "tag": "geosite-cn",
                 "format": "binary",
-                "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs"
+                "download_detour": "direct-out",
+                "url": "https://mydownloads.ft2.ltd/https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs"
             },
             {
                 "type": "remote",
                 "tag": "geosite-google",
                 "format": "binary",
-                "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-google.srs"
+                "download_detour": "direct-out",
+                "url": "https://mydownloads.ft2.ltd/https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-google.srs"
             },
             {
                 "type": "remote",
                 "tag": "geosite-apple@cn",
                 "format": "binary",
-                "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-apple@cn.srs"
+                "download_detour": "direct-out",
+                "url": "https://mydownloads.ft2.ltd/https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-apple@cn.srs"
             },
             {
                 "type": "remote",
                 "tag": "geosite-microsoft@cn",
                 "format": "binary",
-                "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-microsoft@cn.srs"
+                "download_detour": "direct-out",
+                "url": "https://mydownloads.ft2.ltd/https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-microsoft@cn.srs"
             },
             {
                 "type": "remote",
                 "tag": "geosite-category-games@cn",
                 "format": "binary",
-                "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-games@cn.srs"
+                "download_detour": "direct-out",
+                "url": "https://mydownloads.ft2.ltd/https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-games@cn.srs"
             },
             {
                 "type": "remote",
                 "tag": "geoip-one-china",
                 "format": "binary",
-                "url": "https://raw.githubusercontent.com/OneOhCloud/one-geoip/rule-set/one-china.srs"
+                "download_detour": "direct-out",
+                "url": "https://mydownloads.ft2.ltd/https://raw.githubusercontent.com/OneOhCloud/one-geoip/rule-set/one-china.srs"
             }
         ],
         "final": "proxy",
