@@ -28,114 +28,81 @@ table inet myrouter {
         gc-interval 1h;
     }
 
-    chain out_wan_fixed {
-        meta mark set 1000;
-    }
-
-    chain out_wan6 {
-        meta mark set 999;
-    }
-
-    chain out_wan_balanced {
-        meta l4proto tcp meta mark set jhash tcp sport mod 5 map { 0: 1000, 1: 1001, 2: 1002, 3: 1003, 4: 1004 } accept;
-        meta l4proto udp meta mark set jhash udp sport mod 5 map { 0: 1000, 1: 1001, 2: 1002, 3: 1003, 4: 1004 } accept;
-        # others, we do static to avoid problem
-        meta mark set 1000 accept;
-    }
-
-    # chain in_wan {
-    #     meta mark set iifname map { "br-wan.1320": 1000, "br-wan.1321": 1001, "br-wan.1324": 1002, "br-wan.1320mac0" :1003, "br-wan.1320mac1": 1004 };
-    # }
-
     chain out_tproxy {
         # has to be at prerouting
         meta nfproto ipv4 meta l4proto {tcp, udp} mark set 1100 tproxy ip to 127.0.0.1:1000 counter accept;
         meta nfproto ipv6 meta l4proto {tcp, udp} mark set 1100 tproxy ip6 to [::1]:1000 counter accept;
-        # others, we do static to avoid problem
-        meta mark set 1000 accept;
+    }
+
+    chain out_wan_balanced {
+        meta l4proto tcp meta mark set jhash tcp sport mod 7 map { 0: 1000, 1: 1001, 2: 1002, 3: 1003, 4: 1004 } accept;
+        meta l4proto udp meta mark set jhash udp sport mod 7 map { 0: 1000, 1: 1001, 2: 1002, 3: 1003, 4: 1004 } accept;
     }
 
     # meta mark
     # 999: from sing-box, shall not be routed to sing-box (ip rule);
     # 1000-1004: shall be routed to desinated outbound interface;
+    # 1100: loopback, used by tproxy
 
     chain output {
         type route hook output priority filter+5; policy accept;
+
+        # not to wan: go directly
+        oifname { "br-lan", "br-guest" } accept;
 
         ip daddr @CHNROUTES goto out_wan_balanced;
 
         # from sing-box
         meta mark eq 999 meta nfproto ipv4 update @direct_list4 { ip daddr } counter goto out_wan_balanced;
-        meta mark eq 999 meta nfproto ipv6 update @direct_list6 { ip6 daddr } counter goto out_wan6;
+        # We don't have IPv6 load balancing
+        meta mark eq 999 meta nfproto ipv6 update @direct_list6 { ip6 daddr } counter accept;
         # anything else?
         meta mark eq 999 counter goto out_wan_balanced;
-        
+
         # dummy mark, only used to force reroute.
-        # non-existing mark will fallback to "iif lo lookup 1000"
         meta mark != 999 jump route_decision_output;
     }
-    
+
     chain route_decision_output {
-        # not to wan: go directly
-        oifname != { "br-wan.1320", "br-wan.1321", "br-wan.1324", "br-wan.1320mac0", "br-wan.1320mac1" } accept;
-    
         # pass NTP
         udp dport 123 counter accept;
+        # bypass tailscale
+        udp sport 41641 counter accept;
 
-        # helps to authenticate
-        ip daddr { 10.0.0.0/8, 114.114.114.114 } counter goto out_wan_fixed;
-        ip daddr @direct_list4 counter goto out_wan_balanced;
-
+        ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16, 100.64.0.0/10, 114.114.114.114 } counter accept;
         # pass school's IPv6 CIDR
-        ip6 daddr 2001:250:6413::/48 counter goto out_wan6;
-        ip6 daddr 240c:c7b9:0:400::/64 counter goto out_wan6;
-        ip6 daddr @direct_list6 counter goto out_wan6;
+        ip6 daddr { 2001:250:6413::/48, 240c:c7b9:0:400::/64 } counter accept;
+
+        ip daddr @direct_list4 counter goto out_wan_balanced;
+        # We don't have IPv6 load balancing
+        ip6 daddr @direct_list6 counter accept;
 
         # is TCP or UDP: try tproxy
-        # meta l4proto {tcp, udp} meta mark set 998 accept;
+        # meta l4proto {tcp, udp} meta mark set 1100 accept;
         # only intersect DNS
-        udp dport 53 meta mark set 998 accept;
-        
-        # others: go fixed
-        goto out_wan_fixed;
-        
+        udp dport 53 meta mark set 1100 accept;
+        meta l4proto {tcp, udp} goto out_wan_balanced;
     }
-    
-    # chain output_raw {
-    #     type filter hook output priority raw; policy accept;
-    #     ip daddr 1.1.1.1 meta nftrace set 1;
-    #     ip daddr 119.29.29.29 meta nftrace set 1;
-    # }
-    # 
-    # 
-    # chain prerouting_raw {
-    #     type filter hook prerouting priority raw; policy accept;
-    #     #ip daddr {10.1.10.1, 10.10.10.10} meta nftrace set 1;
-    #     #ip saddr {10.1.10.1, 10.10.10.10} meta nftrace set 1;
-    #     ip daddr 1.1.1.1 meta nftrace set 1;
-    #     meta mark 998 meta nftrace set 1;
-    # }
 
     chain prerouting {    
         type filter hook prerouting priority dstnat+5; policy accept;
 
         # packages at lo cannot be forwarded to other interface. Must go tproxy;
-        meta mark 998 meta mark set 0 goto out_tproxy;
-        iifname "br-lan" counter jump route_decision;
-        # iifname { "br-wan.1320", "br-wan.1321", "br-wan.1324", "br-wan.1320mac0", "br-wan.1320mac1" } jump in_wan;
+        meta mark 1100 goto out_tproxy;
+        iifname { "br-lan", "br-guest" } counter jump route_decision;
     }
 
     chain route_decision {
-        meta nfproto ipv4 meta l4proto icmp counter goto out_wan_fixed;
-        meta nfproto ipv6 meta l4proto icmpv6 counter goto out_wan6;
-
+        meta nfproto ipv4 meta l4proto icmp counter accept;
+        meta nfproto ipv6 meta l4proto icmpv6 counter accept;
+    
         # pass NTP
-        udp dport 123 counter goto out_wan_fixed;
-        udp sport 41641 counter goto out_wan_fixed comment "tailscale";
-        udp dport 3478 counter goto out_wan_fixed comment "STUN";
+        udp dport 123 counter accept;
+        udp sport 41641 counter accept comment "tailscale";
+        udp dport 3478 counter accept comment "STUN";
 
         # helps to authenticate
-        ip daddr { 10.0.0.0/8, 114.114.114.114 } counter goto out_wan_fixed;
+        ip daddr { 10.0.0.0/8, 114.114.114.114 } counter accept;
 
         # avoid DNS leakage
         # this still works if daddr is 192.168.1.1
@@ -151,30 +118,21 @@ table inet myrouter {
         # avoid new ips in direct_list break existing connection
         ct mark 1100 goto out_tproxy;
 
-        ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16, 100.64.0.0/10, 114.114.114.114 } goto out_wan_fixed;
+        ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16, 100.64.0.0/10, 114.114.114.114 } counter accept;
         # pass school's IPv6 CIDR
-        ip6 daddr { 2001:250:6413::/48, 240c:c7b9:0:400::/64 } counter goto out_wan6;
+        ip6 daddr { 2001:250:6413::/48, 240c:c7b9:0:400::/64 } counter accept;
 
         # from others to @direct_list4 ip
         ip daddr @direct_list4 counter goto out_wan_balanced;
-        ip6 daddr @direct_list6 counter goto out_wan6;
+        # We don't have IPv6 load balancing
+        ip6 daddr @direct_list6 counter accept;
 
         # unsupported protocol
-        meta l4proto != {tcp, udp} goto out_wan_balanced;
+        meta l4proto != {tcp, udp} accept;
 
         # first time of a direct_list ip, must keep going through sing-box to keep
         # the connection
         meta mark eq 0 ct mark set 1100 goto out_tproxy;
-    }
-
-    chain postrouting {
-        type filter hook postrouting priority filter+5; policy accept;
-
-        oifname "br-wan.1320" counter;
-        oifname "br-wan.1320mac0" counter;
-        oifname "br-wan.1320mac1" counter;
-        oifname "br-wan.1321" counter;
-        oifname "br-wan.1324" counter;
     }
 }
 

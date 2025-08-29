@@ -26,6 +26,7 @@
                 "rule_set": [
                     "geosite-cn",
                     "geosite-apple@cn",
+                    "geosite-microsoft@cn",
                     "geosite-category-games@cn"
                 ],
                 "server": "dns_westlake"
