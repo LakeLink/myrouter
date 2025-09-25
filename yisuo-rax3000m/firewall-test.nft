@@ -60,10 +60,10 @@ table inet myrouter {
         ip daddr @CHNROUTES goto out_wan_balanced;
 
         # from sing-box
-        meta mark eq 999 meta nfproto ipv4 update @direct_list4 { ip daddr } counter accept;
-        meta mark eq 999 meta nfproto ipv6 update @direct_list6 { ip6 daddr } counter accept;
+        meta mark eq 999 meta nfproto ipv4 update @direct_list4 { ip daddr } counter goto out_wan_balanced;
+        meta mark eq 999 meta nfproto ipv6 update @direct_list6 { ip6 daddr } counter goto out_wan_balanced;
         # anything else?
-        meta mark eq 999 counter accept;
+        meta mark eq 999 counter goto out_wan_balanced;
 
         meta mark != 999 jump route_decision_output;
     }
