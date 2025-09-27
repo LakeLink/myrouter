@@ -1,0 +1,59 @@
+{
+    "dns": {
+        "servers": [
+            {
+                "tag": "dns_westlake",
+                "address": "10.10.10.10",
+                "detour": "direct-out"
+            }
+        ],
+        "rules": [
+            {
+                "outbound": "any",
+                "server": "dns_westlake"
+            },
+            {
+                "query_type": "PTR",
+                "server": "dns_westlake"
+            },
+            {
+                "rule_set": [
+                    "geosite-google"
+                ],
+                "server": "dns_1"
+            },
+            {
+                "rule_set": [
+                    "geosite-cn",
+                    "geosite-apple@cn",
+                    "geosite-microsoft@cn",
+                    "geosite-category-games@cn"
+                ],
+                "server": "dns_westlake"
+            },
+            {
+                "domain_suffix": [
+                    "steamcontent.com",
+                    "steamserver.net",
+                    "aki-game.net",
+                    "kurogame.xyz",
+                    "marmot-cloud.com",
+                    "bing.com"
+                ],
+                "server": "dns_westlake"
+            },
+            {
+                "domain_suffix": [
+                    "atlake.link",
+                    "lake.link",
+                    "doesn-t.work",
+                    "lklk.tech",
+                    "yif.fyi",
+                    "ft2.ltd",
+                    "githubusercontent.com"
+                ],
+                "server": "dns_westlake"
+            }
+        ]
+    }
+}
